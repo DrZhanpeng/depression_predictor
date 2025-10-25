@@ -1,9 +1,11 @@
+from gettext import install
 import streamlit as st
 
 st.title("🎈 My new Streamlit app")
 st.write(
     "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
 )
+
 
 import streamlit as st
 import joblib
@@ -231,4 +233,10 @@ if st.button("Predict"):
     plt.savefig("shap_force_plot.png", bbox_inches='tight', dpi=1200)
 
     st.image("shap_force_plot.png")
+
+
+
+
+
+
 
