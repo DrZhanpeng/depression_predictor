@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import shap
 import matplotlib.pyplot as plt
-
+import xgboost as xgb
 # Load the model
 model = joblib.load('XGBoost1.bin')
 
@@ -226,17 +226,10 @@ if st.button("Predict"):
     st.write(advice)
 
     # Calculate SHAP values and display force plot
-    explainer = shap.TreeExplainer(model)
-    base_value = 0.5  # 默认值
     
-    # 尝试从模型中获取base_score
-    if hasattr(model, 'base_score'):
-        base_value = model.base_score
-    elif hasattr(model, 'get_booster'):
-        # 处理XGBoost返回的base_score字符串（包含方括号）
-        base_score_str = model.get_booster().attributes().get('base_score', '0.5')
+   
+    explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(pd.DataFrame([feature_values], columns=feature_names))
-
     shap.force_plot(explainer.expected_value, shap_values[0], pd.DataFrame([feature_values], columns=feature_names), matplotlib=True)
     plt.savefig("shap_force_plot.png", bbox_inches='tight', dpi=1200)
 
