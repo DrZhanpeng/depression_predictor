@@ -225,16 +225,56 @@ if st.button("Predict"):
 
     st.write(advice)
 
-    # Calculate SHAP values and display force plot
-    base_value = 0.5
-    explainer = shap.TreeExplainer(model)
+    try:
+        # 首先尝试统一API
+        explainer = shap.Explainer(model, feature_perturbation="tree_path_dependent")
+        st.success("SHAP解释器创建成功（使用统一API）")
+        shap_values = explainer(pd.DataFrame([feature_values], columns=feature_names))
+    except Exception as e:
+        st.warning(f"创建SHAP解释器时遇到问题: {str(e)}")
+        st.warning("尝试备用方案...")
+        
+        # 备用方案：手动处理base_score
+        base_value = 0.5  # 默认值
+        
+        # 尝试从模型中获取base_score
+        if hasattr(model, 'base_score'):
+            base_value = model.base_score
+        elif hasattr(model, 'get_booster'):
+            try:
+                booster = model.get_booster()
+                base_score_str = booster.attributes().get('base_score', '0.5')
+                # 处理方括号
+                if base_score_str.startswith('[') and base_score_str.endswith(']'):
+                    base_score_str = base_score_str[1:-1]
+                base_value = float(base_score_str)
+            except Exception as e2:
+                st.warning(f"获取base_score失败: {str(e2)}，使用默认值0.5")
+                base_value = 0.5
+        
+        # 使用TreeExplainer并设置base_value
+        try:
+            explainer = shap.TreeExplainer(model, base_value=base_value)
+            st.success("SHAP解释器创建成功（使用备用方案）")
+            shap_values = explainer.shap_values(pd.DataFrame([feature_values], columns=feature_names))
+        except Exception as e3:
+            st.error(f"无法创建SHAP解释器: {str(e3)}")
+            st.stop()
     
-    shap_values = explainer.shap_values(pd.DataFrame([feature_values], columns=feature_names))
-
-    shap.force_plot(explainer.expected_value, shap_values[0], pd.DataFrame([feature_values], columns=feature_names), matplotlib=True)
-    plt.savefig("shap_force_plot.png", bbox_inches='tight', dpi=1200)
-
-    st.image("shap_force_plot.png")
+    # 生成并保存SHAP力图
+    fig, ax = plt.subplots()
+    shap.force_plot(
+        explainer.expected_value[0] if isinstance(explainer.expected_value, list) else explainer.expected_value,
+        shap_values[0] if isinstance(shap_values, list) else shap_values.values[0],
+        pd.DataFrame([feature_values], columns=feature_names),
+        matplotlib=True,
+        show=False,
+        figsize=(12, 4),
+        text_rotation=15
+    )
+    
+    # 直接在Streamlit中显示图表，而不是保存到文件
+    st.pyplot(fig)
 
 
 
