@@ -3,6 +3,6 @@ pandas
 numpy
 scikit-learn
 matplotlib
-shap
+shap==0.45.1
 joblib
-xgboost
+xgboost==2.0.3

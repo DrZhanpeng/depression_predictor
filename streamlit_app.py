@@ -14,8 +14,10 @@ import pandas as pd
 import shap
 import matplotlib.pyplot as plt
 import xgboost as xgb
+import json
+
 # Load the model
-model = joblib.load('XGBoost1.bin')
+model = joblib.load('XGBoost2.pkl')
 
 # Define feature options
 性别_options = {
@@ -226,7 +228,28 @@ if st.button("Predict"):
     st.write(advice)
 
     # Calculate SHAP values and display force plot
+
+
+
+
+
+# 如果base_score是带括号的字符串，修复其格式
+if hasattr(model, 'get_booster'):
+    booster = model.get_booster()
+    config = json.loads(booster.save_config())
+    base_score_str = config['learner']['learner_model_param']['base_score']
     
+    # 如果存在括号，则移除
+    if base_score_str.startswith('[') and base_score_str.endswith(']'):
+        base_score_clean = base_score_str.strip('[]')
+        config['learner']['learner_model_param']['base_score'] = base_score_clean
+        
+        # 更新booster的配置
+        booster.reset()
+        booster.load_config(json.dumps(config))
+
+# 现在初始化SHAP
+
    
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(pd.DataFrame([feature_values], columns=feature_names))
