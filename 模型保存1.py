@@ -69,7 +69,7 @@ print("Best Log Loss score: ", -grid_search.best_score_)
 best_model = grid_search.best_estimator_
 import joblib
 # 保存模型
-joblib.dump(best_model , 'XGBoost4.pkl')
+joblib.dump(best_model , 'XGBoost5.pkl')
 print(best_model.base_score)  # 应该输出浮点数，而不是字符串
 # 在训练代码中
 

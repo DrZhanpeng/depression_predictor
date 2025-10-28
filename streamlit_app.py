@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 
 # Load the model
-model = joblib.load('XGBoost4.pkl')
+model = joblib.load('XGBoost5.pkl')
 
 # Define feature options
 性别_options = {
